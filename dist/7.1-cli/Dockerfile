@@ -1,6 +1,6 @@
 FROM php:7.1-cli
 
-MAINTAINER Piotr Zając <piotr.zajac@strix.net>
+MAINTAINER Piotr Zając <piotr.zajac@unixslayer.net>
 
 RUN apt-get update -y && \
     apt-get install -y \

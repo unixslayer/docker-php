@@ -1,11 +1,10 @@
 FROM php:7.2-cli
 
-MAINTAINER Piotr Zając <piotr.zajac@strix.net>
+MAINTAINER Piotr Zając <piotr.zajac@unixslayer.net>
 
 RUN apt-get update -y && \
     apt-get install -y \
     ca-certificates \
-    nginx \
     git \
     cron \
     wget \
