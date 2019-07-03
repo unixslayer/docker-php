@@ -1,6 +1,13 @@
+ARG http_proxy=""
+ARG https_proxy=""
+
 FROM php:7.1-fpm
 
-MAINTAINER Piotr Zając <piotr.zajac@unixslayer.net>
+MAINTAINER Piotr Zając <piotr.zajac@unixslayer.pl>
+
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+
+RUN pear config-set http_proxy ${http_proxy}
 
 RUN apt-get update -y && \
     apt-get install -y \
@@ -46,9 +53,8 @@ PHP_PM_MAX_CHILDREN=10 \
 PHP_PM_START_SERVERS=4 \
 PHP_PM_MIN_SPARE_SERVERS=2 \
 PHP_PM_MAX_SPARE_SERVERS=6 \
-COMPOSER_HOME="/var/www/.composer/"
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+http_proxy=${http_proxy} \
+https_proxy=${https_proxy}
 
 RUN chown -R www-data:www-data /var/www
 

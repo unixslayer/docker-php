@@ -4,12 +4,15 @@ Yet another docker images for PHP
 Supported versions:
 ---
 
-Every version that has [Security updates support](http://php.net/supported-versions.php).
+Every version that has [Security updates support](http://php.net/supported-versions.php) is a must. Some are used for fun or business needs.
 
+- PHP:5.6-apache
 - PHP:7.1-fpm
 - PHP:7.1-cli
+- PHP:7.1-apache
 - PHP:7.2-fpm
 - PHP:7.2-cli
+- PHP:7.2-apache
 - ...more to come
 
 Build, Benchmark & Push

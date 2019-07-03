@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
-declare -a VERSIONS=('7.1-fpm' '7.1-cli' '7.2-fpm' '7.2-cli')
+declare -a VERSIONS=('5.6-apache' '7.1-cli' '7.1-fpm' '7.1-apache' '7.2-cli' '7.2-fpm' '7.2-apache')
 
 for i in "${VERSIONS[@]}"
 do
-  VERSION=${i: 0:3}
-  ENV=${i: -3}
-  source ./env/${VERSION}.env
-  rm -rf ./dist/$i
-  mkdir -p ./dist/$i
-  cp -R ./conf/${ENV} ./dist/$i/conf/
-  cp -R ./bin/${ENV} ./dist/$i/bin
-  cp Dockerfile ./dist/$i/Dockerfile
-  sed -i "s/\$VERSION/$i/g" ./dist/$i/Dockerfile
-  sed -i "s/\$MCRYPT_VERSION/${MCRYPT_VERSION}/g" ./dist/$i/Dockerfile
-  docker build -t unixslayer/php:$i ./dist/$i
+  BUILD_ARGS=""
+
+  if [[ -n "$http_proxy" ]]; then
+    BUILD_ARGS="${BUILD_ARGS} --build-arg http_proxy=${http_proxy}"
+  fi
+
+  if [[ -n "$https_proxy" ]]; then
+    BUILD_ARGS="${BUILD_ARGS} --build-arg https_proxy=${https_proxy}"
+  fi
+
+  docker build ${BUILD_ARGS} -t unixslayer/php:${i} ./dist/${i}
 done

@@ -1,6 +1,13 @@
-FROM php:$VERSION
+ARG http_proxy=""
+ARG https_proxy=""
 
-MAINTAINER Piotr Zając <piotr.zajac@unixslayer.net>
+FROM php:5.6-apache
+
+MAINTAINER Piotr Zając <piotr.zajac@unixslayer.pl>
+
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+
+RUN pear config-set http_proxy ${http_proxy}
 
 RUN apt-get update -y && \
     apt-get install -y \
@@ -21,7 +28,6 @@ RUN apt-get update -y && \
     libpng-dev \
     libxslt1-dev \
     libjpeg-dev \
-  && pecl install mcrypt-$MCRYPT_VERSION \
   && apt-get clean
 
 RUN docker-php-ext-configure \
@@ -37,27 +43,24 @@ RUN docker-php-ext-install \
   zip \
   opcache
 
-RUN docker-php-ext-enable mcrypt
-
 ENV PHP_MEMORY_LIMIT="4G" \
-PHP_PORT=9000 \
-PHP_PM="dynamic" \
-PHP_PM_MAX_CHILDREN=10 \
-PHP_PM_START_SERVERS=4 \
-PHP_PM_MIN_SPARE_SERVERS=2 \
-PHP_PM_MAX_SPARE_SERVERS=6 \
-COMPOSER_HOME="/var/www/.composer/"
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+SERVER_NAME="php.local" \
+SERVER_ADMIN="webmaster@local" \
+DOCUMENT_ROOT="/var/www/html" \
+http_proxy=${http_proxy} \
+https_proxy=${https_proxy}
 
 RUN chown -R www-data:www-data /var/www
 
-COPY ./conf /conf/
-COPY ./bin/init.sh /usr/local/bin/init.sh
+ADD ./conf/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+ADD ./conf/conf-enabled/*                 /etc/apache2/conf-enabled/
 
+ADD ./bin/init.sh /usr/local/bin/init.sh
 RUN ["chmod", "+x", "/usr/local/bin/init.sh"]
 RUN ["/usr/local/bin/init.sh"]
 
 WORKDIR /var/www/html
 
-CMD ["php-fpm"]
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["/usr/sbin/apache2ctl", "-DFOREGROUND"]

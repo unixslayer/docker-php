@@ -1,7 +1,7 @@
 ARG http_proxy=""
 ARG https_proxy=""
 
-FROM php:7.2-cli
+FROM php:7.2-apache
 
 MAINTAINER Piotr Zając <piotr.zajac@unixslayer.pl>
 
@@ -47,17 +47,23 @@ RUN docker-php-ext-install \
 RUN docker-php-ext-enable mcrypt
 
 ENV PHP_MEMORY_LIMIT="4G" \
+SERVER_NAME="php.local" \
+SERVER_ADMIN="webmaster@local" \
+DOCUMENT_ROOT="/var/www/html" \
 http_proxy=${http_proxy} \
 https_proxy=${https_proxy}
 
 RUN chown -R www-data:www-data /var/www
 
-COPY ./conf /conf/
-COPY ./bin/init.sh /usr/local/bin/init.sh
+ADD ./conf/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+ADD ./conf/conf-enabled/*                 /etc/apache2/conf-enabled/
 
+ADD ./bin/init.sh /usr/local/bin/init.sh
 RUN ["chmod", "+x", "/usr/local/bin/init.sh"]
 RUN ["/usr/local/bin/init.sh"]
 
 WORKDIR /var/www/html
 
-CMD ["php"]
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["/usr/sbin/apache2ctl", "-DFOREGROUND"]
