@@ -7,9 +7,6 @@ MAINTAINER Piotr Zając <piotr.zajac@unixslayer.pl>
 
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
-RUN pear config-set http_proxy ${http_proxy}
-RUN export http_proxy=${http_proxy} && export https_proxy=${https_proxy}
-
 RUN apt-get update -y && \
     apt-get install -y \
     ca-certificates \
@@ -31,7 +28,11 @@ RUN apt-get update -y && \
     libonig-dev \
     libzip-dev
 
-RUN pecl install mcrypt
+ADD ./bin/init.sh /usr/local/bin/init.sh
+RUN ["chmod", "+x", "/usr/local/bin/init.sh"]
+RUN ["/usr/local/bin/init.sh"]
+
+RUN pecl install mcrypt-1.0.3
 RUN apt-get clean
 
 RUN docker-php-ext-configure gd
@@ -41,11 +42,11 @@ RUN docker-php-ext-install \
   gd \
   intl \
   mbstring \
+  opcache \
   soap \
   xsl \
-  zip \
   xml \
-  opcache
+  zip
 
 RUN pecl install xdebug
 
@@ -71,18 +72,13 @@ PHP_OPCACHE_MAX_ACCELERATED_FILES=60000 \
 PHP_OPCACHE_CONSISTENCY_CHECK=0 \
 PHP_XDEBUG_DEFAULT_ENABLE="On" \
 PHP_XDEBUG_REMOTE_ENABLE="On" \
-PHP_XDEBUG_REMOTE_AUTOSTART="Off" \
-http_proxy=${http_proxy} \
-https_proxy=${https_proxy}
+PHP_XDEBUG_REMOTE_AUTOSTART="Off"
 
 RUN chown -R www-data:www-data /var/www
 
 ADD ./conf/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 ADD ./conf/conf-enabled/*                 /etc/apache2/conf-enabled/
 ADD ./conf/php.ini /usr/local/etc/php/php.ini
-ADD ./bin/init.sh /usr/local/bin/init.sh
-RUN ["chmod", "+x", "/usr/local/bin/init.sh"]
-RUN ["/usr/local/bin/init.sh"]
 
 WORKDIR /var/www/html
 
