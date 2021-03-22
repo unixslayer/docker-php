@@ -32,10 +32,11 @@ ADD ./bin/init.sh /usr/local/bin/init.sh
 RUN ["chmod", "+x", "/usr/local/bin/init.sh"]
 RUN ["/usr/local/bin/init.sh"]
 
-RUN pecl install mcrypt-1.0.3
+RUN pecl install mcrypt-1.0.3 xdebug
 RUN apt-get clean
 
-RUN docker-php-ext-configure gd
+RUN docker-php-ext-configure \
+  gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 
 RUN docker-php-ext-install \
   bcmath \
@@ -47,8 +48,6 @@ RUN docker-php-ext-install \
   xsl \
   xml \
   zip
-
-RUN pecl install xdebug
 
 RUN docker-php-ext-enable mcrypt
 RUN docker-php-ext-enable xdebug
@@ -62,8 +61,8 @@ SERVER_ENVIRONMENT="dev" \
 PHP_DISPLAY_ERRORS="STDOUT" \
 PHP_DISPLAY_STARTUP_ERRORS="On" \
 PHP_MAX_INPUT_VARS=1000 \
-PHP_MEMORY_LIMIT="4G" \
 PHP_POST_MAX_SIZE="512M" \
+PHP_UPLOAD_MAX_FILESIZE="128M" \
 PHP_OPCACHE_ENABLE=1 \
 PHP_OPCACHE_ENABLE_CLI=1 \
 PHP_OPCACHE_VALIDATE_TIMESTAMP=0 \

@@ -53,10 +53,11 @@ ENV PHP_DATE_TIMEZONE="UTC" \
 PHP_MEMORY_LIMIT="4G" \
 PHP_PORT=9000 \
 PHP_PM="dynamic" \
-PHP_PM_MAX_CHILDREN=10 \
-PHP_PM_START_SERVERS=4 \
-PHP_PM_MIN_SPARE_SERVERS=2 \
-PHP_PM_MAX_SPARE_SERVERS=6 \
+PHP_PM_MAX_CHILDREN=80 \
+PHP_PM_START_SERVERS=5 \
+PHP_PM_MIN_SPARE_SERVERS=5 \
+PHP_PM_MAX_SPARE_SERVERS=35 \
+PHP_PM_MAX_REQUESTS=0 \
 PHP_DISPLAY_ERRORS="STDOUT" \
 PHP_DISPLAY_STARTUP_ERRORS="On" \
 PHP_MAX_INPUT_VARS=1000 \
@@ -78,8 +79,10 @@ PHP_LISTEN_MODE="0777"
 RUN chown -R www-data:www-data /var/www
 
 COPY ./conf/php.ini /usr/local/etc/php/php.ini
-COPY ./conf/php.conf /usr/local/etc/php.conf
+COPY ./conf/www.conf /usr/local/etc/php-fpm.d/
 
 WORKDIR /var/www/html
 
-CMD ["php-fpm", "-F"]
+EXPOSE $PHP_PORT
+
+ENTRYPOINT /usr/local/sbin/php-fpm --nodaemonize --force-stderr
